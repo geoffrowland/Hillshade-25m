@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+            <title>Hillshade</title>
+
+            <!-- Leaflet -->
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+            integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+            crossorigin=""/>
+            <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+            integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+            crossorigin=""></script>
+            <style>
+		html, body { 
+	    	height: 100%; 
+	    	padding: 0; 
+	    	margin: 0; 
+	    }
+	    .leaflet-container {
+            background:#b3b3b3
+        }
+        #map {
+            position:absolute;
+            top:0;
+            bottom:0;
+            width:100%;
+            height: 100%
+		} 
+            </style>
+
+        </head>
+        <body>
+
+        <div id="map"></div>
+
+        <script>
+        /* **** Leaflet **** */
+        L.GridLayer.GridDebug = L.GridLayer.extend({
+				createTile: function (coords) {
+							const tile = document.createElement('div');
+							tile.style.outline = '1px solid green';
+							//tile.style.fontWeight = 'bold';
+							tile.style.fontSize = '10pt';
+							tile.innerHTML = [
+                            (coords.x/Math.pow(2,coords.z)*360-180).toFixed(6) + ' ' +
+                            (180/Math.PI*Math.atan(0.5*(Math.exp(Math.PI-2*Math.PI*coords.y/Math.pow(2,coords.z))-Math.exp(-(Math.PI-2*Math.PI*coords.y/Math.pow(2,coords.z)))))).toFixed(6),
+							coords.z + '/'+ coords.x + '/' + ((2 ** coords.z - coords.y)-1),
+							].join('<br /><br />');
+								return tile;
+				},
+		});
+
+		L.gridLayer.gridDebug = function (opts) {
+			return new L.GridLayer.GridDebug(opts);
+		};
+
+        var grid = L.gridLayer.gridDebug();
+        
+        // Base layers
+        //  .. OpenStreetMap
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	});
+
+        //  .. Grey background
+        //var white = L.tileLayer("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAAA1BMVEX///+nxBvIAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==");
+        //var grey = L.tileLayer("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TpSqVgnYQcchQnSyIijpqFYpQodQKrTqYXPoFTRqSFBdHwbXg4Mdi1cHFWVcHV0EQ/ABxcXVSdJES/5cUWsR4cNyPd/ced+8AoV5mqtkxBqiaZaTiMTGTXRUDrwigD92YRkhipj6XTCbgOb7u4ePrXZRneZ/7c/QqOZMBPpF4lumGRbxBPLVp6Zz3icOsKCnE58SjBl2Q+JHrsstvnAsOCzwzbKRT88RhYrHQxnIbs6KhEk8SRxRVo3wh47LCeYuzWq6y5j35C4M5bWWZ6zSHEMcilpCECBlVlFCGhSitGikmUrQf8/APOv4kuWRylcDIsYAKVEiOH/wPfndr5ifG3aRgDOh8se2PYSCwCzRqtv19bNuNE8D/DFxpLX+lDsx8kl5raZEjILQNXFy3NHkPuNwBBp50yZAcyU9TyOeB9zP6pizQfwv0rLm9Nfdx+gCkqavEDXBwCIwUKHvd491d7b39e6bZ3w9rlnKkvO52TgAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+MHEgk5Lsm3O3IAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAA1BMVEWzs7P94mLeAAAAH0lEQVQYGe3BAQ0AAADCIPunfg43YAAAAAAAAAAA5wIhAAAB9aK9BAAAAABJRU5ErkJggg==");
+        var grey = L.tileLayer("");
+
+
+        // Overlay layers (TMS)
+        var lyr = L.tileLayer('https://geoffrowland.github.io/Hillshade-25m/{z}/{x}/{y}.png', {
+		tms: true, 
+		opacity: 1.0,
+		maxNativeZoom: 12, 
+		attribution: "EU-DEM &copy; European Environment Agency (EEA) under the framework of the <a href = 'https://land.copernicus.eu/imagery-in-situ/eu-dem' target = '_blank'>Copernicus</a> programme",
+		bounds: L.latLngBounds([[49.859235, -10.722656],[60.930432, 1.845703]])
+	});
+
+        // Map
+        var map = L.map('map', {
+            center: [53.81375196116825, -3.3741654256092737],
+            zoom: 5,
+            minZoom: 2,
+            maxZoom: 14,
+            layers: [grey, lyr]
+        });
+
+        var basemaps = {"OpenStreetMap": osm, "Grey background": grey}
+        var overlaymaps = {"Hillshade 25m": lyr, "Grid": grid}
+
+        // Add base layers
+        L.control.layers(basemaps, overlaymaps, {
+			collapsed: true
+		}).addTo(map);
+
+        // Fit to overlay bounds (SW and NE points with (lat, lon))
+        //map.fitBounds([[48.63988623886918, 5.517940182987871], [58.98761768346732, -12.266271034206419]]);
+
+        </script>
+
+        </body>
+        </html>
+
+        
