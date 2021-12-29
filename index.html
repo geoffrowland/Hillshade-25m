@@ -71,7 +71,8 @@
 
 
         // Overlay layers (TMS)
-        var lyr = L.tileLayer('https://geoffrowland.github.io/Hillshade-25m/{z}/{x}/{y}.png', {
+        var lyr = L.tileLayer('{z}/{x}/{y}.png', {
+        //var lyr = L.tileLayer('https://geoffrowland.github.io/Hillshade-25m/{z}/{x}/{y}.png', {
 		tms: true, 
 		opacity: 1.0,
 		maxNativeZoom: 12, 
